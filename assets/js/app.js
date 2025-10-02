@@ -35,17 +35,17 @@
             const result = await res.json();
     
             if (result.success) {
-                alert("✅ Entrada registrada en la base de datos");
+                alert("Entrada registrada en la base de datos");
                 form.reset();
                 setDefaultEntradaNow();
                 // Recargar la tabla con datos actualizados desde la BD
                 cargarRegistros();
             } else {
-                alert("❌ Error: " + (result.error || result.message));
+                alert("Error: " + (result.error || result.message));
             }
         } catch (err) {
             console.error(err);
-            alert("⚠️ Error al conectar con el servidor");
+            alert("Error al conectar con el servidor");
         }
     });
     
@@ -122,11 +122,11 @@
                 // Recargar la tabla después de procesar la salida
                 cargarRegistros();
             } else {
-                alert("❌ Error: " + (result.error || "Error al procesar la salida"));
+                alert("Error: " + (result.error || "Error al procesar la salida"));
             }
         } catch (err) {
             console.error(err);
-            alert("⚠️ Error al conectar con el servidor");
+            alert("Error al conectar con el servidor");
         }
     }
 
