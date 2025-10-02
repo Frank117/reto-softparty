@@ -20,16 +20,34 @@
 
     btnDescargarListado.addEventListener('click', descargarListadoPDF);
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
+    
         const data = obtenerDatosFormulario();
-        data.id = self.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
-        registros.push(data);
-        form.reset();
-        setDefaultEntradaNow();
-        renderTabla();
+    
+        try {
+            const res = await fetch('register_entry.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(data)
+            });
+            const result = await res.json();
+    
+            if (result.success) {
+                alert("✅ Entrada registrada en la base de datos");
+                form.reset();
+                setDefaultEntradaNow();
+                // aquí en lugar de renderTabla() deberías traer los datos desde la BD
+            } else {
+                alert("❌ Error: " + (result.error || result.message));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("⚠️ Error al conectar con el servidor");
+        }
     });
+    
 
     filtro.addEventListener('input', renderTabla);
 
@@ -123,5 +141,39 @@
         const nombreArchivo = `Listado_Parqueadero_${new Date().toISOString().slice(0,10)}.pdf`; doc.save(nombreArchivo);
     }
 })();
+async function cargarRegistros() {
+    try {
+        const res = await fetch("get_current_parkings.php");
+        const data = await res.json();
 
+        tablaBody.innerHTML = "";
 
+        if (!data || data.length === 0) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td colspan="7" class="muted">Sin registros</td>`;
+            tablaBody.appendChild(tr);
+            return;
+        }
+
+        for (const r of data) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${r.plate}</strong></td>
+                <td>${r.vehicle_type}</td>
+                <td>${r.full_name}</td>
+                <td>${r.document}</td>
+                <td>${r.phone}</td>
+                <td>${formatDateTime(r.entry_time)}</td>
+                <td>
+                    <button class="btn small" data-accion="facturar" data-id="${r.parking_id}">Salida y factura</button>
+                </td>
+            `;
+            tablaBody.appendChild(tr);
+        }
+    } catch (err) {
+        console.error("Error al cargar registros:", err);
+    }
+}
+
+// Llamar al cargar la página
+document.addEventListener("DOMContentLoaded", cargarRegistros);
