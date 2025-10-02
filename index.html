@@ -99,6 +99,8 @@
                             <th>Documento</th>
                             <th>Contacto</th>
                             <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Precio</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -130,13 +132,25 @@
             localStorage.setItem('vehiculos', JSON.stringify(registros));
         }
 
+        function calcularPrecio(entrada, salida) {
+            if (!entrada || !salida) return '';
+            const tarifa = 3000;
+            const fechaEntrada = new Date(entrada);
+            const fechaSalida = new Date(salida);
+            let horas = (fechaSalida - fechaEntrada) / (1000 * 60 * 60);
+            if (horas < 0) return '';
+            horas = Math.ceil(horas) || 1;
+            return '$' + (horas * tarifa).toLocaleString();
+        }
+
         // --- Renderizar la tabla de vehículos ---
         function renderizarTabla() {
             const registros = obtenerRegistros();
             const tbody = document.querySelector('#tablaRegistros tbody');
-            tbody.innerHTML = ''; // Limpiar tabla
+            tbody.innerHTML = '';
 
             registros.forEach((reg, idx) => {
+                const precio = reg.salida ? calcularPrecio(reg.entrada, reg.salida) : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${reg.placa}</td>
@@ -146,39 +160,102 @@
                     <td>${reg.contacto}</td>
                     <td>${reg.entrada}</td>
                     <td>
-                        <!-- Aquí puedes agregar botones de acciones si lo deseas -->
+                        ${reg.salida ? reg.salida : `<button class="btn btn-salida" data-idx="${idx}">Registrar salida</button>`}
+                    </td>
+                    <td>${precio}</td>
+                    <td>
+                        <button class="btn btn-factura" data-idx="${idx}" ${reg.salida ? '' : 'disabled'}>Factura PDF</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Evento para registrar salida
+            document.querySelectorAll('.btn-salida').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = this.getAttribute('data-idx');
+                    const registros = obtenerRegistros();
+                    const ahora = new Date();
+                    // Formato compatible con input datetime-local
+                    const salida = ahora.toISOString().slice(0,16);
+                    registros[idx].salida = salida.replace('T', ' ');
+                    guardarRegistros(registros);
+                    renderizarTabla();
+                });
+            });
+
+            // Evento para factura PDF
+            document.querySelectorAll('.btn-factura').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = this.getAttribute('data-idx');
+                    generarFacturaPDF(obtenerRegistros()[idx]);
+                });
+            });
+        }
+
+        // Generar factura PDF
+        function generarFacturaPDF(registro) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(20);
+            doc.setTextColor(59, 130, 246);
+            doc.text('SISPark - Factura de Parqueadero', 14, 18);
+
+            doc.setDrawColor(59, 130, 246);
+            doc.line(14, 22, 196, 22);
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+
+            doc.autoTable({
+                startY: 28,
+                head: [['Campo', 'Valor']],
+                body: [
+                    ['Nombre', registro.nombre],
+                    ['Documento', registro.documento],
+                    ['Contacto', registro.contacto],
+                    ['Placa', registro.placa],
+                    ['Tipo de vehículo', registro.tipo],
+                    ['Hora de entrada', registro.entrada],
+                    ['Hora de salida', registro.salida || 'No registrada'],
+                    ['Precio final', registro.salida ? calcularPrecio(registro.entrada, registro.salida) : 'Pendiente']
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [59, 130, 246] },
+                styles: { fontSize: 12 }
+            });
+
+            let finalY = doc.lastAutoTable.finalY;
+            doc.setFontSize(12);
+            doc.text(`Tarifa: $3.000/hora`, 14, finalY + 10);
+            doc.text('Gracias por usar SISPark', 14, finalY + 20);
+
+            doc.save(`Factura_${registro.placa}.pdf`);
         }
 
         // --- Registrar nuevo vehículo ---
         document.getElementById('formRegistro').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Obtener datos del formulario
             const registro = {
                 nombre: this.nombre.value.trim(),
                 documento: this.documento.value.trim(),
                 contacto: this.contacto.value.trim(),
                 placa: this.placa.value.trim().toUpperCase(),
                 tipo: this.tipo.value,
-                entrada: this.entrada.value
+                entrada: this.entrada.value.replace('T', ' ')
             };
 
-            // Validación simple (puedes mejorarla)
             if (!registro.nombre || !registro.documento || !registro.contacto || !registro.placa || !registro.tipo || !registro.entrada) {
                 alert('Por favor, completa todos los campos.');
                 return;
             }
 
-            // Guardar registro
             const registros = obtenerRegistros();
             registros.push(registro);
             guardarRegistros(registros);
 
-            // Limpiar formulario y actualizar tabla
             this.reset();
             renderizarTabla();
         });
