@@ -10,9 +10,11 @@ if (!$parking_id) {
     exit;
 }
 
-// Obtener tarifa desde settings
-$stmt = $pdo->query("SELECT hourly_rate FROM settings ORDER BY id DESC LIMIT 1");
-$tarifa = $stmt->fetchColumn() ?: 3000; // fallback en caso de que no haya settings
+// Obtener tarifa y moneda desde settings
+$stmt = $pdo->query("SELECT hourly_rate, currency FROM settings ORDER BY id DESC LIMIT 1");
+$settings = $stmt->fetch();
+$tarifa = $settings['hourly_rate'] ?? 3000; // fallback en caso de que no haya settings
+$currency = $settings['currency'] ?? 'COP';
 
 try {
     // Buscar registro de parqueo con entrada pero sin salida
@@ -48,7 +50,7 @@ try {
     // Actualizar registro
     $stmt = $pdo->prepare("
         UPDATE parkings 
-        SET exit_time = ?, duration_minutes = ?, amount = ?, invoice_number = ? 
+        SET exit_time = ?, duration_minutes = ?, amount = ?, invoice_number = ?, pdf_generated = 0 
         WHERE id = ?
     ");
     $stmt->execute([
@@ -68,6 +70,7 @@ try {
         'hours' => $horas,
         'total' => $total,
         'tarifa' => $tarifa,
+        'currency' => $currency,
         'vehiculo' => [
             'placa' => $registro['plate'],
             'tipo' => $registro['vehicle_type'],

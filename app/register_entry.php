@@ -6,8 +6,17 @@ $full_name = $_POST['nombre'] ?? '';
 $document = $_POST['documento'] ?? '';
 $phone = $_POST['contacto'] ?? '';
 $plate = strtoupper(trim($_POST['placa'] ?? ''));
-$vehicle_type = $_POST['tipo'] ?? '';
+$vehicle_type = strtolower(trim($_POST['tipo'] ?? ''));
 $entry_time = $_POST['entrada'] ?? date('Y-m-d H:i:s');
+
+// Normalizar tipos de vehículo según el enum de la BD
+$vehicle_type_map = [
+    'carro' => 'carro',
+    'moto' => 'moto', 
+    'bicicleta' => 'bicicleta',
+    'camioneta' => 'otro'  // Camioneta se mapea a 'otro' según el enum
+];
+$vehicle_type = $vehicle_type_map[$vehicle_type] ?? 'carro';
 
 if (!$full_name || !$document || !$plate || !$vehicle_type) {
     http_response_code(400);
