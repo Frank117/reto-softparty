@@ -120,5 +120,71 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="assets/js/app.js"></script>
+    <script>
+        // --- Utilidades para manejar registros en localStorage ---
+        function obtenerRegistros() {
+            return JSON.parse(localStorage.getItem('vehiculos')) || [];
+        }
+
+        function guardarRegistros(registros) {
+            localStorage.setItem('vehiculos', JSON.stringify(registros));
+        }
+
+        // --- Renderizar la tabla de vehículos ---
+        function renderizarTabla() {
+            const registros = obtenerRegistros();
+            const tbody = document.querySelector('#tablaRegistros tbody');
+            tbody.innerHTML = ''; // Limpiar tabla
+
+            registros.forEach((reg, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${reg.placa}</td>
+                    <td>${reg.tipo}</td>
+                    <td>${reg.nombre}</td>
+                    <td>${reg.documento}</td>
+                    <td>${reg.contacto}</td>
+                    <td>${reg.entrada}</td>
+                    <td>
+                        <!-- Aquí puedes agregar botones de acciones si lo deseas -->
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Registrar nuevo vehículo ---
+        document.getElementById('formRegistro').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Obtener datos del formulario
+            const registro = {
+                nombre: this.nombre.value.trim(),
+                documento: this.documento.value.trim(),
+                contacto: this.contacto.value.trim(),
+                placa: this.placa.value.trim().toUpperCase(),
+                tipo: this.tipo.value,
+                entrada: this.entrada.value
+            };
+
+            // Validación simple (puedes mejorarla)
+            if (!registro.nombre || !registro.documento || !registro.contacto || !registro.placa || !registro.tipo || !registro.entrada) {
+                alert('Por favor, completa todos los campos.');
+                return;
+            }
+
+            // Guardar registro
+            const registros = obtenerRegistros();
+            registros.push(registro);
+            guardarRegistros(registros);
+
+            // Limpiar formulario y actualizar tabla
+            this.reset();
+            renderizarTabla();
+        });
+
+        // --- Inicializar tabla al cargar la página ---
+        document.addEventListener('DOMContentLoaded', renderizarTabla);
+    </script>
 
 </html>
