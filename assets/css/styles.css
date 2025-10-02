@@ -169,7 +169,28 @@ h2{
 
 .list-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .input-inline{display:flex;align-items:center;gap:8px}
-.input-inline input{min-width:240px}
+.input-inline input{
+  min-width:240px;
+  background:linear-gradient(135deg, #374151, #1f2937);
+  color:var(--text);
+  border:2px solid rgba(139,92,246,0.4);
+  border-radius:12px;
+  padding:10px 14px;
+  transition:all 0.3s ease;
+  font-family:'Poppins', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size:14px;
+  font-weight:400;
+}
+.input-inline input:focus{
+  outline:none;
+  border-color:var(--primary-2);
+  box-shadow:0 0 0 3px rgba(139,92,246,0.2);
+  background:linear-gradient(135deg, #4b5563, #374151);
+}
+.input-inline input::placeholder{
+  color:var(--muted);
+  opacity:0.8;
+}
 .muted{color:var(--muted);text-align:center}
 
 .table-wrapper{
