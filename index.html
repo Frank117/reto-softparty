@@ -1,11 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Parqueadero - Factura PDF</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="color-scheme" content="light dark">
 </head>
 <body>
-    
-</body>
+    <header class="app-header" role="banner">
+        <div class="container header-inner">
+            <h1>Parqueadero</h1>
+            <nav aria-label="Acciones principales" class="top-actions">
+                <button id="btnNuevaEntrada" class="btn primary" type="button">Nueva entrada</button>
+                <button id="btnDescargarListado" class="btn" type="button">Descargar listado</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" role="main">
+        <section class="card" aria-labelledby="titulo-formulario">
+            <h2 id="titulo-formulario">Registro de entrada</h2>
+            <form id="formRegistro" novalidate>
+                <fieldset>
+                    <legend>Datos del dueño</legend>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="nombre">Nombre completo</label>
+                            <input id="nombre" name="nombre" type="text" required autocomplete="name" placeholder="Ej: Ana Pérez">
+                            <p class="hint">Requerido</p>
+                        </div>
+                        <div class="field">
+                            <label for="documento">Documento de identidad</label>
+                            <input id="documento" name="documento" type="text" required inputmode="numeric" placeholder="Ej: 1234567890" pattern="[0-9]{5,15}">
+                            <p class="hint">Solo números, 5 a 15 dígitos</p>
+                        </div>
+                        <div class="field">
+                            <label for="contacto">Número de contacto</label>
+                            <input id="contacto" name="contacto" type="tel" required autocomplete="tel" placeholder="Ej: 3001234567" pattern="[0-9]{7,15}">
+                            <p class="hint">Solo números, 7 a 15 dígitos</p>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Información del vehículo</legend>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="placa">Placa</label>
+                            <input id="placa" name="placa" type="text" required placeholder="Ej: ABC123" pattern="^[A-Za-z]{3}[- ]?[0-9A-Za-z]{2,3}$" title="Formato típico: ABC123 o ABC-12D">
+                            <p class="hint">Ej: ABC123 o ABC-12D</p>
+                        </div>
+                        <div class="field">
+                            <label for="tipo">Tipo de vehículo</label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="" disabled selected>Seleccione...</option>
+                                <option value="Carro">Carro</option>
+                                <option value="Moto">Moto</option>
+                                <option value="Bicicleta">Bicicleta</option>
+                                <option value="Camioneta">Camioneta</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="entrada">Hora de entrada</label>
+                            <input id="entrada" name="entrada" type="datetime-local" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button class="btn primary" type="submit">Registrar</button>
+                    <button class="btn" type="reset">Limpiar</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="card" aria-labelledby="titulo-listado">
+            <div class="list-header">
+                <h2 id="titulo-listado">Vehículos en parqueadero</h2>
+                <div class="input-inline">
+                    <label for="filtro">Buscar</label>
+                    <input id="filtro" type="search" placeholder="Filtrar por placa, nombre, documento...">
+                </div>
+            </div>
+            <div class="table-wrapper" tabindex="0">
+                <table id="tablaRegistros">
+                    <thead>
+                        <tr>
+                            <th>Placa</th>
+                            <th>Tipo</th>
+                            <th>Dueño</th>
+                            <th>Documento</th>
+                            <th>Contacto</th>
+                            <th>Entrada</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- registros dinámicos -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer" role="contentinfo">
+        <div class="container">
+            <p>Tarifa: <strong id="tarifaLabel">$3.000/hora</strong> • SoftParty 2025</p>
+        </div>
+    </footer>
+
+    <!-- jsPDF CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="assets/js/app.js"></script>
+
 </html>
